@@ -206,6 +206,30 @@ public class RocksDBTimestampedStore extends RocksDBStore implements Timestamped
         }
 
         @Override
+        public KeyValueIterator<Bytes, byte[]> rangeUntil(final Bytes to) {
+            return new RocksDBDualCFRangeIterator(
+                    name,
+                    db.newIterator(newColumnFamily),
+                    db.newIterator(oldColumnFamily),
+                    null,
+                    to,
+                    true,
+                    true);
+        }
+
+        @Override
+        public KeyValueIterator<Bytes, byte[]> rangeFrom(final Bytes from) {
+            return new RocksDBDualCFRangeIterator(
+                    name,
+                    db.newIterator(newColumnFamily),
+                    db.newIterator(oldColumnFamily),
+                    from,
+                    null,
+                    true,
+                    true);
+        }
+
+        @Override
         public void deleteRange(final byte[] from, final byte[] to) {
             try {
                 db.deleteRange(oldColumnFamily, wOptions, from, to);

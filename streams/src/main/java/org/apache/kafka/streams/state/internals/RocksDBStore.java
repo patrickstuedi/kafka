@@ -386,6 +386,30 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
     }
 
     @Override
+    public KeyValueIterator<Bytes, byte[]> rangeUntil(final Bytes to) {
+        Objects.requireNonNull(to, "to cannot be null");
+
+        validateStoreOpen();
+
+        final KeyValueIterator<Bytes, byte[]> rocksDBRangeIterator = dbAccessor.rangeUntil(to);
+        openIterators.add(rocksDBRangeIterator);
+
+        return rocksDBRangeIterator;
+    }
+
+    @Override
+    public KeyValueIterator<Bytes, byte[]> rangeFrom(final Bytes from) {
+        Objects.requireNonNull(from, "to cannot be null");
+
+        validateStoreOpen();
+
+        final KeyValueIterator<Bytes, byte[]> rocksDBRangeIterator = dbAccessor.rangeFrom(from);
+        openIterators.add(rocksDBRangeIterator);
+
+        return rocksDBRangeIterator;
+    }
+
+    @Override
     public synchronized KeyValueIterator<Bytes, byte[]> all() {
         return all(true);
     }
@@ -526,6 +550,10 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
                                               final Bytes to,
                                               final boolean forward);
 
+        KeyValueIterator<Bytes, byte[]> rangeUntil(final Bytes to);
+
+        KeyValueIterator<Bytes, byte[]> rangeFrom(final Bytes to);
+
         /**
          * Deletes keys entries in the range ['from', 'to'], including 'from' and excluding 'to'.
          */
@@ -608,6 +636,32 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
                 to,
                 forward,
                 true
+            );
+        }
+
+        @Override
+        public KeyValueIterator<Bytes, byte[]> rangeUntil(final Bytes to){
+            return new RocksDBRangeIterator(
+                    name,
+                    db.newIterator(columnFamily),
+                    openIterators,
+                    null,
+                    to,
+                    true,
+                    true
+            );
+        }
+
+        @Override
+        public KeyValueIterator<Bytes, byte[]> rangeFrom(final Bytes from){
+            return new RocksDBRangeIterator(
+                    name,
+                    db.newIterator(columnFamily),
+                    openIterators,
+                    from,
+                    null,
+                    true,
+                    true
             );
         }
 

@@ -46,6 +46,8 @@ public class ThreadCache {
     private long numEvicts = 0;
     private long numFlushes = 0;
 
+
+
     public interface DirtyEntryFlushListener {
         void apply(final List<DirtyEntry> dirty);
     }
@@ -199,6 +201,22 @@ public class ThreadCache {
             return new MemoryLRUCacheBytesIterator(Collections.emptyIterator(), new NamedCache(namespace, this.metrics));
         }
         return new MemoryLRUCacheBytesIterator(cache.keyRange(from, to, toInclusive), cache);
+    }
+
+    public MemoryLRUCacheBytesIterator rangeUntil(final String namespace, final Bytes to, final boolean toInclusive) {
+        final NamedCache cache = getCache(namespace);
+        if (cache == null){
+            return new MemoryLRUCacheBytesIterator(Collections.emptyIterator(), new NamedCache(namespace, this.metrics));
+        }
+        return new MemoryLRUCacheBytesIterator(cache.keyRangeUntil(to, toInclusive), cache);
+    }
+
+    public MemoryLRUCacheBytesIterator rangeFrom(final String namespace, final Bytes from, final boolean fromInclusive) {
+        final NamedCache cache = getCache(namespace);
+        if (cache == null){
+            return new MemoryLRUCacheBytesIterator(Collections.emptyIterator(), new NamedCache(namespace, this.metrics));
+        }
+        return new MemoryLRUCacheBytesIterator(cache.keyRangeFrom(from, fromInclusive), cache);
     }
 
     public MemoryLRUCacheBytesIterator reverseRange(final String namespace, final Bytes from, final Bytes to) {

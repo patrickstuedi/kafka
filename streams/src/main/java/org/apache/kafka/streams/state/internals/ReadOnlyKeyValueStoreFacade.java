@@ -16,6 +16,7 @@
  */
 package org.apache.kafka.streams.state.internals;
 
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.apache.kafka.streams.state.TimestampedKeyValueStore;
@@ -39,6 +40,17 @@ public class ReadOnlyKeyValueStoreFacade<K, V> implements ReadOnlyKeyValueStore<
                                         final K to) {
         return new KeyValueIteratorFacade<>(inner.range(from, to));
     }
+
+    @Override
+    public KeyValueIterator<K,V> rangeUntil(final K to) {
+        return new KeyValueIteratorFacade<K,V>(inner.rangeUntil(to));
+    }
+
+    @Override
+    public KeyValueIterator<K,V> rangeFrom(final K from) {
+        return new KeyValueIteratorFacade<K,V>(inner.rangeFrom(from));
+    }
+
 
     @Override
     public KeyValueIterator<K, V> reverseRange(final K from,

@@ -126,6 +126,16 @@ public class KeyValueToTimestampedKeyValueByteStoreAdapter implements KeyValueSt
     }
 
     @Override
+    public KeyValueIterator<Bytes, byte[]> rangeUntil(final Bytes to){
+        return new KeyValueToTimestampedKeyValueIteratorAdapter<>(store.rangeUntil(to));
+    }
+
+    @Override
+    public KeyValueIterator<Bytes, byte[]> rangeFrom(final Bytes from){
+        return new KeyValueToTimestampedKeyValueIteratorAdapter<>((store.rangeFrom(from)));
+    }
+
+    @Override
     public KeyValueIterator<Bytes, byte[]> reverseRange(final Bytes from,
                                                         final Bytes to) {
         return new KeyValueToTimestampedKeyValueIteratorAdapter<>(store.reverseRange(from, to));

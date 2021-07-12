@@ -284,6 +284,14 @@ class NamedCache {
         return keySetIterator(cache.navigableKeySet().subSet(from, true, to, toInclusive), true);
     }
 
+    synchronized Iterator<Bytes> keyRangeUntil(Bytes to, boolean toInclusive) {
+        return keySetIterator(cache.navigableKeySet().headSet(to, toInclusive), true);
+    }
+
+    public Iterator<Bytes> keyRangeFrom(Bytes from, boolean fromInclusive) {
+        return keySetIterator(cache.navigableKeySet().tailSet(from, fromInclusive), true);
+    }
+
     synchronized Iterator<Bytes> reverseKeyRange(final Bytes from, final Bytes to) {
         return keySetIterator(cache.navigableKeySet().subSet(from, true, to, true), false);
     }
@@ -334,6 +342,8 @@ class NamedCache {
         cache.clear();
         streamsMetrics.removeAllCacheLevelSensors(Thread.currentThread().getName(), taskName, storeName);
     }
+
+
 
     /**
      * A simple wrapper class to implement a doubly-linked list around MemoryLRUCacheBytesEntry

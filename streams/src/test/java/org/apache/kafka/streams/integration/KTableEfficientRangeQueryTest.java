@@ -26,10 +26,7 @@ import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.TopologyTestDriver;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier;
-import org.apache.kafka.streams.state.KeyValueIterator;
-import org.apache.kafka.streams.state.Stores;
+import org.apache.kafka.streams.state.*;
 import org.apache.kafka.streams.KeyValue;
 import org.junit.Test;
 import java.util.LinkedList;
@@ -58,36 +55,51 @@ public class KTableEfficientRangeQueryTest {
             //get input topic and stateStore
             final TestInputTopic<String, String> input = driver
                     .createInputTopic("input", new StringSerializer(), new StringSerializer());
-            final KeyValueStore<String, String> stateStore = driver.getKeyValueStore(TABLE_NAME);
+            final ReadOnlyKeyValueStore<String, String> stateStore = driver.getKeyValueStore(TABLE_NAME);
 
             //write some data
-            input.pipeInput("a", "value");
-            input.pipeInput("b", "value2");
-            input.pipeInput("c", "value3");
-            input.pipeInput("d", "value4");
-            input.pipeInput("e", "value5");
+            System.out.println("### writing some data");
+            input.pipeInput("a", "value-a");
+            input.pipeInput("b", "value-b");
+            input.pipeInput("c", "value-c");
+            input.pipeInput("d", "value-d");
+            input.pipeInput("e", "value-e");
 
             //query the state store
-            final String val = stateStore.get("a");
-            final KeyValueIterator<String, String> range = stateStore.range("b", "d");
-            final LinkedList<KeyValue<String, String>> rangeResult = new LinkedList<>();
-            while (range.hasNext()) {
-                final KeyValue<String, String> next = range.next();
-                rangeResult.add(next);
-            }
-            final KeyValueIterator<String, String> all = stateStore.all();
+            final KeyValueIterator<String, String> allIterator = stateStore.all();
             final LinkedList<KeyValue<String, String>> allResult = new LinkedList<>();
-            while (all.hasNext()) {
-                final KeyValue<String, String> next = all.next();
+            while (allIterator.hasNext()) {
+                final KeyValue<String, String> next = allIterator.next();
                 allResult.add(next);
             }
+            System.out.println("### entire store: " + allResult);
 
-            //print the results
-            System.out.println("### get result val " + val);
-            System.out.println("### rangeResult " + rangeResult);
-            System.out.println("### allResult " + allResult);
-            System.out.flush();
-            System.out.println("### done");
+            final String val = stateStore.get("a");
+            System.out.println("### single value, key a, value: " + val);
+
+            final KeyValueIterator<String, String> rangeIterator = stateStore.range("b", "d");
+            final LinkedList<KeyValue<String, String>> rangeResult = new LinkedList<>();
+            while (rangeIterator.hasNext()) {
+                final KeyValue<String, String> next = rangeIterator.next();
+                rangeResult.add(next);
+            }
+            System.out.println("### range, b-d: " + rangeResult);
+
+            final KeyValueIterator<String, String> untilIterator = stateStore.rangeUntil("c");
+            final LinkedList<KeyValue<String, String>> untilResult = new LinkedList<>();
+            while (untilIterator.hasNext()) {
+                final KeyValue<String, String> next = untilIterator.next();
+                untilResult.add(next);
+            }
+            System.out.println("### until c: " + untilResult);
+
+            final KeyValueIterator<String, String> fromIterator = stateStore.rangeFrom("c");
+            final LinkedList<KeyValue<String, String>> fromResult = new LinkedList<>();
+            while (fromIterator.hasNext()) {
+                final KeyValue<String, String> next = fromIterator.next();
+                fromResult.add(next);
+            }
+            System.out.println("### from c: " + fromResult);
         }
     }
 }

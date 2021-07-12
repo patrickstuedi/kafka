@@ -267,6 +267,22 @@ public class CachingKeyValueStore
     }
 
     @Override
+    public KeyValueIterator<Bytes, byte[]> rangeUntil(final Bytes to) {
+        validateStoreOpen();
+        final KeyValueIterator<Bytes, byte[]> storeIterator = wrapped().rangeUntil(to);
+        final ThreadCache.MemoryLRUCacheBytesIterator cacheIterator = context.cache().rangeUntil(cacheName, to, true);
+        return new MergedSortedCacheKeyValueBytesStoreIterator(cacheIterator, storeIterator, true);
+    }
+
+    @Override
+    public KeyValueIterator<Bytes, byte[]> rangeFrom(final Bytes from) {
+        validateStoreOpen();
+        final KeyValueIterator<Bytes, byte[]> storeIterator = wrapped().rangeFrom(from);
+        final ThreadCache.MemoryLRUCacheBytesIterator cacheIterator = context.cache().rangeFrom(cacheName, from, true);
+        return new MergedSortedCacheKeyValueBytesStoreIterator(cacheIterator, storeIterator, true);
+    }
+
+    @Override
     public KeyValueIterator<Bytes, byte[]> reverseRange(final Bytes from,
                                                         final Bytes to) {
         if (from.compareTo(to) > 0) {

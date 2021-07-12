@@ -276,6 +276,18 @@ public class MeteredKeyValueStore<K, V>
     }
 
     @Override
+    public KeyValueIterator<K,V> rangeUntil(final K to) {
+        Objects.requireNonNull(to, "keyFrom cannot be null");
+        return new MeteredKeyValueIterator(wrapped().rangeUntil(Bytes.wrap(serdes.rawKey(to))), rangeSensor);
+    }
+
+    @Override
+    public KeyValueIterator<K,V> rangeFrom(final K from) {
+        Objects.requireNonNull(from, "keyFrom cannot be null");
+        return new MeteredKeyValueIterator(wrapped().rangeFrom(Bytes.wrap(serdes.rawKey(from))), rangeSensor);
+    }
+
+    @Override
     public KeyValueIterator<K, V> reverseRange(final K from,
                                                final K to) {
         Objects.requireNonNull(from, "keyFrom cannot be null");

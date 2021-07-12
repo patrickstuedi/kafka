@@ -123,6 +123,16 @@ public class ChangeLoggingKeyValueBytesStore
     }
 
     @Override
+    public KeyValueIterator<Bytes, byte[]> rangeUntil(final Bytes to){
+        return wrapped().rangeUntil(to);
+    }
+
+    @Override
+    public KeyValueIterator<Bytes, byte[]> rangeFrom(final Bytes from){
+        return wrapped().rangeFrom(from);
+    }
+
+    @Override
     public KeyValueIterator<Bytes, byte[]> reverseRange(final Bytes from,
                                                         final Bytes to) {
         return wrapped().reverseRange(from, to);

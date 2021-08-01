@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -281,6 +282,13 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
         Objects.requireNonNull(key, "key cannot be null");
         validateStoreOpen();
         dbAccessor.put(key.get(), value);
+    }
+
+    public synchronized void put(final ByteBuffer key,
+                                 final ByteBuffer value) {
+        Objects.requireNonNull(key, "key cannot be null");
+        validateStoreOpen();
+        dbAccessor.put(key, value);
     }
 
     @Override
@@ -509,6 +517,8 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
         void put(final byte[] key,
                  final byte[] value);
 
+        void put(ByteBuffer key, ByteBuffer value);
+
         void prepareBatch(final List<KeyValue<Bytes, byte[]>> entries,
                           final WriteBatch batch) throws RocksDBException;
 
@@ -547,6 +557,7 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
                         final WriteBatch batch) throws RocksDBException;
 
         void close();
+
     }
 
     class SingleColumnFamilyAccessor implements RocksDBAccessor {
@@ -573,6 +584,16 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
                     // String format is happening in wrapping stores. So formatted message is thrown from wrapping stores.
                     throw new ProcessorStateException("Error while putting key/value into store " + name, e);
                 }
+            }
+        }
+
+        @Override
+        public void put(ByteBuffer key, ByteBuffer value) {
+            try {
+                db.put(columnFamily, wOptions, key, value);
+            } catch (final RocksDBException e) {
+                // String format is happening in wrapping stores. So formatted message is thrown from wrapping stores.
+                throw new ProcessorStateException("Error while putting key/value into store " + name, e);
             }
         }
 

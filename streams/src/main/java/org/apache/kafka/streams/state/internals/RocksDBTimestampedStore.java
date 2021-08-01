@@ -35,6 +35,7 @@ import org.rocksdb.WriteBatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -144,6 +145,16 @@ public class RocksDBTimestampedStore extends RocksDBStore implements Timestamped
                     // String format is happening in wrapping stores. So formatted message is thrown from wrapping stores.
                     throw new ProcessorStateException("Error while putting key/value into store " + name, e);
                 }
+            }
+        }
+
+        @Override
+        public void put(ByteBuffer key, ByteBuffer value) {
+            try {
+                db.put(newColumnFamily, wOptions, key, value);
+            } catch (final RocksDBException e) {
+                // String format is happening in wrapping stores. So formatted message is thrown from wrapping stores.
+                throw new ProcessorStateException("Error while putting key/value into store " + name, e);
             }
         }
 

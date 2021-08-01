@@ -61,10 +61,12 @@ import org.rocksdb.LRUCache;
 import org.rocksdb.Options;
 import org.rocksdb.PlainTableConfig;
 import org.rocksdb.Statistics;
+import scala.util.control.Exception.By;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -713,6 +715,48 @@ public class RocksDBStoreTest extends AbstractKeyValueStoreTest {
 
         try (final KeyValueIterator<Bytes, byte[]> iterator = rocksDBStore.range(null, new Bytes(stringSerializer.serialize(null, "1")))) {
             assertEquals(expectedContents, getDeserializedList(iterator));
+        }
+    }
+
+    @Test
+    public void shouldPerformOnDirectPut() {
+        rocksDBStore.init((StateStoreContext) context, rocksDBStore);
+
+        final int numberOfRecords = 1024;
+        final int keySize = 8;
+        final int dataSize = 1024;
+        ByteBuffer keyBuffer = ByteBuffer.allocateDirect(keySize);
+        ByteBuffer valueBuffer = ByteBuffer.allocateDirect(dataSize);
+
+        for (int k = 0; k < 32; k++) {
+            final ArrayList<KeyValue<Bytes, byte[]>> heapData = new ArrayList(numberOfRecords);
+            for (int i = 0; i < numberOfRecords; i++) {
+                ByteBuffer key = ByteBuffer.allocate(8);
+                key.putLong(i);
+                byte[] value = TestUtils.randomBytes(dataSize);
+                KeyValue<Bytes, byte[]> kv = new KeyValue<>(new Bytes(key.array()), value);
+                heapData.add(kv);
+            }
+
+            long start = System.nanoTime();
+            for (int i = 0; i < heapData.size(); i++) {
+                rocksDBStore.put(heapData.get(i).key, heapData.get(i).value);
+            }
+            long end = System.nanoTime();
+            long diff = (end - start) / 1000;
+            System.out.println("### benchmark time, heap, size " + heapData.size() + ", diff " + diff);
+
+            start = System.nanoTime();
+            for (int i = 0; i < numberOfRecords; i++) {
+                keyBuffer.putLong(0, i);
+                valueBuffer.putLong(0, i);
+                keyBuffer.clear();
+                valueBuffer.clear();
+                rocksDBStore.put(keyBuffer, valueBuffer);
+            }
+            end = System.nanoTime();
+            diff = (end - start) / 1000;
+            System.out.println("### benchmark time, direct, size " + numberOfRecords + ", diff " + diff);
         }
     }
 

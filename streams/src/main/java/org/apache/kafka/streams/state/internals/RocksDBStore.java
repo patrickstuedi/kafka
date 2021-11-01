@@ -21,6 +21,8 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.common.utils.Utils;
 import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.OffsetVector;
+import org.apache.kafka.streams.OffsetVectorFactory;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.errors.InvalidStateStoreException;
 import org.apache.kafka.streams.errors.ProcessorStateException;
@@ -28,6 +30,7 @@ import org.apache.kafka.streams.processor.BatchingStateRestoreCallback;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.processor.StateStoreContext;
+import org.apache.kafka.streams.processor.api.RecordMetadata;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.RocksDBConfigSetter;
@@ -65,6 +68,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.apache.kafka.streams.StreamsConfig.METRICS_RECORDING_LEVEL_CONFIG;
@@ -106,6 +110,9 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
 
     protected volatile boolean open = false;
 
+    private StateStoreContext context;
+    private OffsetVector offsetVector;
+
     RocksDBStore(final String name,
                  final String metricsScope) {
         this(name, DB_FILE_DIR, new RocksDBMetricsRecorder(metricsScope, name));
@@ -117,6 +124,7 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
         this.name = name;
         this.parentDir = parentDir;
         this.metricsRecorder = metricsRecorder;
+        this.offsetVector = OffsetVectorFactory.createOffsetVector();
     }
 
     @SuppressWarnings("unchecked")
@@ -252,6 +260,7 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
         // value getter should always read directly from rocksDB
         // since it is only for values that are already flushed
         context.register(root, new RocksDBBatchingRestoreCallback(this));
+        this.context = context;
     }
 
     @Override
@@ -281,6 +290,16 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
         Objects.requireNonNull(key, "key cannot be null");
         validateStoreOpen();
         dbAccessor.put(key.get(), value);
+        // FIXME record metadata can be null because when this store is used as a Segment,
+        // we never call init(). Is that correct?
+        // to make this logic work properly for segmented stores, we either need to
+        // track the seen offsets one level up (in the RocksDBSegmentedBytesStore) OR
+        // we need to get a reference to the context here.
+        if (context != null && context.recordMetadata().isPresent()) {
+            final RecordMetadata meta = context.recordMetadata().get();
+            offsetVector.update(meta.topic(), meta.partition(), meta.offset());
+        }
+
     }
 
     @Override
@@ -703,5 +722,10 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
     // for testing
     public Options getOptions() {
         return userSpecifiedOptions;
+    }
+    public Optional<OffsetVector> getOffsetVector() {
+        final OffsetVector currentOffsetVector = OffsetVectorFactory.createOffsetVector();
+        currentOffsetVector.merge(offsetVector);
+        return Optional.of(currentOffsetVector);
     }
 }

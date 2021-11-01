@@ -17,9 +17,11 @@
 package org.apache.kafka.streams.state;
 
 import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.OffsetVector;
 import org.apache.kafka.streams.processor.StateStore;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A key-value store that supports put/get/delete and range queries.
@@ -67,4 +69,14 @@ public interface KeyValueStore<K, V> extends StateStore, ReadOnlyKeyValueStore<K
      * @throws NullPointerException If {@code null} is used for key.
      */
     V delete(K key);
+
+    /**
+     * Get the current OffsetVector for this state store
+     *
+     * @return Optional value of OffsetVector.
+     */
+    default Optional<OffsetVector> getOffsetVector() {
+        return Optional.empty();
+    }
+
 }

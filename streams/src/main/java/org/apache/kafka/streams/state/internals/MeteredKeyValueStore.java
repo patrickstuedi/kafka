@@ -22,6 +22,7 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.common.utils.Time;
 import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.OffsetVector;
 import org.apache.kafka.streams.errors.ProcessorStateException;
 import org.apache.kafka.streams.kstream.internals.Change;
 import org.apache.kafka.streams.kstream.internals.WrappingNullableUtils;
@@ -43,6 +44,7 @@ import org.apache.kafka.streams.state.internals.metrics.StateStoreMetrics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.apache.kafka.streams.kstream.internals.WrappingNullableUtils.prepareKeySerde;
 import static org.apache.kafka.streams.processor.internals.metrics.StreamsMetricsImpl.maybeMeasureLatency;
@@ -303,6 +305,10 @@ public class MeteredKeyValueStore<K, V>
     @Override
     public long approximateNumEntries() {
         return wrapped().approximateNumEntries();
+    }
+
+    public Optional<OffsetVector> getOffsetVector() {
+        return wrapped().getOffsetVector();
     }
 
     @Override

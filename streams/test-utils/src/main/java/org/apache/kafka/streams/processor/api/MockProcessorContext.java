@@ -460,6 +460,11 @@ public class MockProcessorContext<KForward, VForward> implements ProcessorContex
             }
 
             @Override
+            public Optional<RecordMetadata> recordMetadata() {
+                return Optional.empty();
+            }
+
+            @Override
             public Serde<?> keySerde() {
                 return MockProcessorContext.this.keySerde();
             }

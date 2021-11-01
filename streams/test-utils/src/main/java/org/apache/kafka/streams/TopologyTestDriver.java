@@ -1235,6 +1235,10 @@ public class TopologyTestDriver implements Closeable {
         public boolean isOpen() {
             return inner.isOpen();
         }
+
+        public Optional<OffsetVector> getOffsetVector() {
+            return inner.getOffsetVector();
+        }
     }
 
     static class WindowStoreFacade<K, V> extends ReadOnlyWindowStoreFacade<K, V> implements WindowStore<K, V> {

@@ -82,6 +82,7 @@ import static org.easymock.EasyMock.eq;
 import static org.easymock.EasyMock.isNull;
 import static org.easymock.EasyMock.mock;
 import static org.easymock.EasyMock.notNull;
+import static org.easymock.EasyMock.or;
 import static org.easymock.EasyMock.reset;
 import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -402,6 +403,7 @@ public class RocksDBStoreTest extends AbstractKeyValueStoreTest {
         final MonotonicProcessorRecordContext recordContext = new MonotonicProcessorRecordContext("input", 0);
         context.setRecordContext(recordContext);
         rocksDBStore.init((StateStoreContext) context, rocksDBStore);
+        rocksDBStore.getPosition().clear();
 
         final Position expected = Position.emptyPosition();
         long offset = 0;

@@ -260,6 +260,7 @@ public class InMemoryKeyValueStoreTest extends AbstractKeyValueStoreTest {
         final MonotonicProcessorRecordContext recordContext = new MonotonicProcessorRecordContext("input", 0);
         context.setRecordContext(recordContext);
         inMemoryKeyValueStore.init((StateStoreContext) context, inMemoryKeyValueStore);
+        inMemoryKeyValueStore.getPosition().clear();
 
         final Position expected = Position.emptyPosition();
         long offset = 0;

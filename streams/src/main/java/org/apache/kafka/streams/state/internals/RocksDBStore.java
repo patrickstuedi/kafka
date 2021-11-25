@@ -120,7 +120,7 @@ public class RocksDBStore implements KeyValueStore<Bytes, byte[]>, BatchWritingS
         this.name = name;
         this.parentDir = parentDir;
         this.metricsRecorder = metricsRecorder;
-        this.position = Position.emptyPosition();
+        this.position = Position.getSingleton();
     }
 
     @SuppressWarnings("unchecked")

@@ -48,7 +48,7 @@ public class InMemoryKeyValueStore implements KeyValueStore<Bytes, byte[]> {
 
     public InMemoryKeyValueStore(final String name) {
         this.name = name;
-        this.position = Position.emptyPosition();
+        this.position = Position.getSingleton();
     }
 
     @Override

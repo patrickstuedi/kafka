@@ -16,12 +16,16 @@
  */
 package org.apache.kafka.streams.state.internals;
 
+import java.util.Optional;
+import javax.swing.text.html.Option;
+import org.apache.kafka.clients.Metadata;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.processor.StateStoreContext;
+import org.apache.kafka.streams.processor.api.RecordMetadata;
 import org.apache.kafka.streams.processor.internals.InternalProcessorContext;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
@@ -35,6 +39,7 @@ public class ChangeLoggingKeyValueBytesStore
     implements KeyValueStore<Bytes, byte[]> {
 
     InternalProcessorContext context;
+    Position position;
 
     ChangeLoggingKeyValueBytesStore(final KeyValueStore<Bytes, byte[]> inner) {
         super(inner);
@@ -47,6 +52,7 @@ public class ChangeLoggingKeyValueBytesStore
         this.context = asInternalProcessorContext(context);
         super.init(context, root);
         maybeSetEvictionListener();
+        this.position = Position.getSingleton();
     }
 
     @Override
@@ -77,6 +83,12 @@ public class ChangeLoggingKeyValueBytesStore
                     final byte[] value) {
         wrapped().put(key, value);
         log(key, value);
+
+        if (context != null && context.recordMetadata().isPresent()) {
+            final Optional<RecordMetadata> optionalRecordMetadata = context.recordMetadata();
+            final RecordMetadata meta = optionalRecordMetadata.get();
+            position = position.update(meta.topic(), meta.partition(), meta.offset());
+        }
     }
 
     @Override

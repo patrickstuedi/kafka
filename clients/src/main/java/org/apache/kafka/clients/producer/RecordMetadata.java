@@ -16,6 +16,7 @@
  */
 package org.apache.kafka.clients.producer;
 
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.record.RecordBatch;
 import org.apache.kafka.common.requests.ProduceResponse;
@@ -23,7 +24,7 @@ import org.apache.kafka.common.requests.ProduceResponse;
 /**
  * The metadata for a record that has been acknowledged by the server
  */
-public final class RecordMetadata {
+public final class RecordMetadata implements TopicPartitionOffset {
 
     /**
      * Partition value for record without partition assigned

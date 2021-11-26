@@ -16,8 +16,10 @@
  */
 package org.apache.kafka.streams.processor.internals;
 
+import java.util.concurrent.Future;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
@@ -179,7 +181,7 @@ public class RecordCollectorImpl implements RecordCollector {
 
         final ProducerRecord<byte[], byte[]> serializedRecord = new ProducerRecord<>(topic, partition, timestamp, keyBytes, valBytes, headers);
 
-        streamsProducer.send(serializedRecord, (metadata, exception) -> {
+        Future<? extends TopicPartitionOffset> fut = streamsProducer.send(serializedRecord, (metadata, exception) -> {
             // if there's already an exception record, skip logging offsets or new exceptions
             if (sendException.get() != null) {
                 return;

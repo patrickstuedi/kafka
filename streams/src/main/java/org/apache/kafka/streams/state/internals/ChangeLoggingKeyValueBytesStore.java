@@ -17,8 +17,6 @@
 package org.apache.kafka.streams.state.internals;
 
 import java.util.Optional;
-import javax.swing.text.html.Option;
-import org.apache.kafka.clients.Metadata;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
@@ -31,6 +29,7 @@ import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 import java.util.List;
+import org.apache.kafka.streams.state.Position;
 
 import static org.apache.kafka.streams.processor.internals.ProcessorContextUtils.asInternalProcessorContext;
 

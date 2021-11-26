@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.test;
 
+import java.util.concurrent.Future;
+import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.metrics.Metrics;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.StreamsConfig;
@@ -126,10 +128,11 @@ public class NoOpProcessorContext extends AbstractProcessorContext<Object, Objec
     }
 
     @Override
-    public void logChange(final String storeName,
-                          final Bytes key,
-                          final byte[] value,
-                          final long timestamp) {
+    public Future<? extends TopicPartitionOffset> logChange(final String storeName,
+                                                            final Bytes key,
+                                                            final byte[] value,
+                                                            final long timestamp) {
+        return null;
     }
 
     @Override

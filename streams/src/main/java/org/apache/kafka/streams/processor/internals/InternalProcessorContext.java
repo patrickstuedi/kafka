@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.streams.processor.internals;
 
+import java.util.concurrent.Future;
+import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.BytesSerializer;
 import org.apache.kafka.common.utils.Bytes;
@@ -112,10 +114,10 @@ public interface InternalProcessorContext<KOut, VOut>
         return (T) getStateStore(builder.name());
     }
 
-    void logChange(final String storeName,
-                   final Bytes key,
-                   final byte[] value,
-                   final long timestamp);
+    Future<? extends TopicPartitionOffset> logChange(final String storeName,
+                                                     final Bytes key,
+                                                     final byte[] value,
+                                                     final long timestamp);
 
     String changelogFor(final String storeName);
 }

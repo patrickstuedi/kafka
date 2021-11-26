@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.streams.processor.internals;
 
+import java.util.concurrent.Future;
+import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
@@ -239,10 +241,11 @@ public class AbstractProcessorContextTest {
         }
 
         @Override
-        public void logChange(final String storeName,
-                              final Bytes key,
-                              final byte[] value,
-                              final long timestamp) {
+        public Future<? extends TopicPartitionOffset> logChange(final String storeName,
+                                                                final Bytes key,
+                                                                final byte[] value,
+                                                                final long timestamp) {
+            return null;
         }
 
         @Override

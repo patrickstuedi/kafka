@@ -142,7 +142,7 @@ public class RecordCollectorImpl implements RecordCollector {
     }
 
     @Override
-    public <K, V> void send(final String topic,
+    public <K, V> Future<? extends TopicPartitionOffset> send(final String topic,
                             final K key,
                             final V value,
                             final Headers headers,
@@ -201,6 +201,8 @@ public class RecordCollectorImpl implements RecordCollector {
                 log.trace("Failed record: (key {} value {} timestamp {}) topic=[{}] partition=[{}]", key, value, timestamp, topic, partition);
             }
         });
+
+        return fut;
     }
 
     private void recordSendError(final String topic, final Exception exception, final ProducerRecord<byte[], byte[]> serializedRecord) {

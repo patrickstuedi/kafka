@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.streams.state;
 
+import java.util.concurrent.Future;
+import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.metrics.Metrics;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -215,20 +217,21 @@ public class KeyValueStoreTestDriver<K, V> {
             new MockStreamsMetrics(new Metrics())
         ) {
             @Override
-            public <K1, V1> void send(final String topic,
-                                      final K1 key,
-                                      final V1 value,
-                                      final Headers headers,
-                                      final Integer partition,
-                                      final Long timestamp,
-                                      final Serializer<K1> keySerializer,
-                                      final Serializer<V1> valueSerializer) {
+            public <K1, V1> Future<TopicPartitionOffset> send(final String topic,
+                                                              final K1 key,
+                                                              final V1 value,
+                                                              final Headers headers,
+                                                              final Integer partition,
+                                                              final Long timestamp,
+                                                              final Serializer<K1> keySerializer,
+                                                              final Serializer<V1> valueSerializer) {
                 // for byte arrays we need to wrap it for comparison
 
                 final K keyTest = serdes.keyFrom(keySerializer.serialize(topic, headers, key));
                 final V valueTest = serdes.valueFrom(valueSerializer.serialize(topic, headers, value));
 
                 recordFlushed(keyTest, valueTest);
+                return null;
             }
 
             @Override

@@ -16,7 +16,9 @@
  */
 package org.apache.kafka.test;
 
+import java.util.concurrent.Future;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
@@ -39,20 +41,21 @@ public class MockRecordCollector implements RecordCollector {
     private boolean flushed = false;
 
     @Override
-    public <K, V> void send(final String topic,
-                            final K key,
-                            final V value,
-                            final Headers headers,
-                            final Integer partition,
-                            final Long timestamp,
-                            final Serializer<K> keySerializer,
-                            final Serializer<V> valueSerializer) {
+    public <K, V> Future<? extends TopicPartitionOffset> send(final String topic,
+                                                              final K key,
+                                                              final V value,
+                                                              final Headers headers,
+                                                              final Integer partition,
+                                                              final Long timestamp,
+                                                              final Serializer<K> keySerializer,
+                                                              final Serializer<V> valueSerializer) {
         collected.add(new ProducerRecord<>(topic,
             partition,
             timestamp,
             key,
             value,
             headers));
+        return null;
     }
 
     @Override

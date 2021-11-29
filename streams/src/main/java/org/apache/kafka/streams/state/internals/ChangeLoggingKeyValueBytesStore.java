@@ -17,6 +17,8 @@
 package org.apache.kafka.streams.state.internals;
 
 import java.util.Optional;
+import java.util.concurrent.Future;
+import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KeyValue;
@@ -150,7 +152,7 @@ public class ChangeLoggingKeyValueBytesStore
     }
 
     void log(final Bytes key,
-             final byte[] value) {
-        context.logChange(name(), key, value, context.timestamp());
+                                               final byte[] value) {
+        Future<?> fut = context.logChange(name(), key, value, context.timestamp());
     }
 }

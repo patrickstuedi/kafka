@@ -16,6 +16,8 @@
  */
 package org.apache.kafka.streams.state.internals;
 
+import java.util.concurrent.Future;
+import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.state.KeyValueStore;
 
@@ -30,7 +32,7 @@ public class ChangeLoggingTimestampedKeyValueBytesStore extends ChangeLoggingKey
 
     @Override
     void log(final Bytes key,
-             final byte[] valueAndTimestamp) {
+                                               final byte[] valueAndTimestamp) {
         if (valueAndTimestamp != null) {
             context.logChange(name(), key, rawValue(valueAndTimestamp), timestamp(valueAndTimestamp));
         } else {

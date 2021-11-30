@@ -39,6 +39,7 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateStore;
+import org.apache.kafka.streams.processor.StateStoreContext;
 import org.apache.kafka.streams.processor.internals.StreamThread;
 import org.apache.kafka.streams.processor.internals.StreamThread.State;
 import org.apache.kafka.streams.query.FailureReason;
@@ -336,8 +337,14 @@ public class IQv2IntegrationTest {
                             return STORE_NAME;
                         }
 
+                        @Deprecated
                         @Override
                         public void init(final ProcessorContext context, final StateStore root) {
+                            throw new UnsupportedOperationException();
+                        }
+
+                        @Override
+                        public void init(final StateStoreContext context, final StateStore root) {
                             context.register(root, (key, value) -> put(Bytes.wrap(key), value));
                             this.open = true;
                         }

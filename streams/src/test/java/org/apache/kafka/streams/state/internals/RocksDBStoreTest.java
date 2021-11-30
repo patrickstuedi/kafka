@@ -38,6 +38,7 @@ import org.apache.kafka.streams.errors.ProcessorStateException;
 import org.apache.kafka.streams.processor.StateStoreContext;
 import org.apache.kafka.streams.processor.TaskId;
 import org.apache.kafka.streams.processor.internals.metrics.StreamsMetricsImpl;
+import org.apache.kafka.streams.query.Position;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.RocksDBConfigSetter;
@@ -407,7 +408,7 @@ public class RocksDBStoreTest extends AbstractKeyValueStoreTest {
         long offset = 0;
         for (final KeyValue<Bytes, byte[]> k : entries) {
             rocksDBStore.put(k.key, k.value);
-            expected.update("input", 0, offset);
+            expected.withComponent("input", 0, offset);
             offset++;
         }
 

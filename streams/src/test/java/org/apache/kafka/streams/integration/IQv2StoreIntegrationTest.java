@@ -318,15 +318,13 @@ public class IQv2StoreIntegrationTest {
                     .globalTable(
                         INPUT_TOPIC_NAME,
                         Consumed.with(Serdes.Integer(), Serdes.Integer()),
-                        materialized
-                    );
+                        materialized);
             } else {
                 builder
                     .table(
                         INPUT_TOPIC_NAME,
                         Consumed.with(Serdes.Integer(), Serdes.Integer()),
-                        materialized
-                    );
+                        materialized);
             }
         } else if (supplier instanceof WindowBytesStoreSupplier) {
             final Materialized<Integer, Integer, WindowStore<Bytes, byte[]>> materialized =

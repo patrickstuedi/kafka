@@ -212,13 +212,4 @@ public final class StateSerdes<K, V> {
                     e);
         }
     }
-
-    @Override
-    public String toString() {
-        return "StateSerdes{" +
-            "topic='" + topic + '\'' +
-            ", keySerde=" + keySerde +
-            ", valueSerde=" + valueSerde +
-            '}';
-    }
 }

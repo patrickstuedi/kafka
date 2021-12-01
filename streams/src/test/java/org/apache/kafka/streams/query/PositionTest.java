@@ -95,6 +95,16 @@ public class PositionTest {
     }
 
     @Test
+    public void shouldUpdateComponentMonotonically() {
+        final Position position = Position.emptyPosition();
+        position.withComponent("topic", 3, 5L);
+        position.withComponent("topic", 3, 4L);
+        assertThat(position.getBound("topic").get(3), equalTo(5L));
+        position.withComponent("topic", 3, 6L);
+        assertThat(position.getBound("topic").get(3), equalTo(6L));
+    }
+
+    @Test
     public void shouldCopy() {
         final Position position = Position.fromMap(mkMap(
             mkEntry("topic", mkMap(mkEntry(0, 5L))),

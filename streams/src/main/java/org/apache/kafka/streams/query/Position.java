@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 /**
  * A representation of a position vector with respect to a set of topic partitions. For example, in
@@ -69,14 +70,19 @@ public class Position {
     /**
      * Augment an existing Position by setting a new offset for a topic and partition.
      * <p>
-     * Returns a self-reference for chained calls. Note: this method mutates the Position. Note
-     * also: this method does not enforce anything about the arguments, except that the topic must
-     * not be null. It is the caller's responsibility to enforce desired semantics and validity.
+     * Note: enforces monotonicity on offsets. I.e., if there is already a component for the same
+     * topic and partition with a larger offset, the update will succeed but not overwrite the
+     * offset.
+     * <p>
+     * Returns a self-reference for chained calls. Note: this method mutates the Position.
      */
     public Position withComponent(final String topic, final int partition, final long offset) {
         position
             .computeIfAbsent(topic, k -> new ConcurrentHashMap<>())
-            .put(partition, offset);
+            .compute(
+                partition,
+                (integer, prior) -> prior == null || offset > prior ? offset : prior
+            );
         return this;
     }
 

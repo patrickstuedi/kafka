@@ -21,6 +21,8 @@ import org.apache.kafka.streams.kstream.Windowed;
 import org.apache.kafka.streams.query.PositionBound;
 import org.apache.kafka.streams.query.Query;
 import org.apache.kafka.streams.query.QueryResult;
+import org.apache.kafka.streams.query.SessionWindowKeyQuery;
+import org.apache.kafka.streams.query.WindowRangeQuery;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.SessionStore;
 
@@ -36,6 +38,33 @@ public class RocksDBSessionStore
     @Override
     public <R> QueryResult<R> query(final Query<R> query, final PositionBound positionBound,
         final boolean collectExecutionInfo) {
+
+        if (query instanceof SessionWindowKeyQuery){
+            @SuppressWarnings("unchecked") final SessionWindowKeyQuery<Bytes, byte[]> sessionWindowKeyQuery = (SessionWindowKeyQuery<Bytes, byte[]>) query;
+            final Bytes key = sessionWindowKeyQuery.getKey();
+            final KeyValueIterator<Windowed<Bytes>, byte[]> kvIterator = this.fetch(key);
+            @SuppressWarnings("unchecked") final R result = (R) kvIterator;
+            final QueryResult<R> queryResult = QueryResult.forResult(result);
+            return queryResult;
+        } else if (query instanceof WindowRangeQuery){
+            @SuppressWarnings("unchecked") final WindowRangeQuery<Bytes, Long> windowRangeQuery = (WindowRangeQuery<Bytes, Long>) query;
+            final Bytes key = windowRangeQuery.getLowerBound();
+            final long windowLower = windowRangeQuery.getWindowLowerBound();
+            final long windowUpper = windowRangeQuery.getWindowUpperBound();
+            if (windowRangeQuery.getUpperBound().isPresent()){
+                final Bytes upperKey = windowRangeQuery.getUpperBound().get();
+                final KeyValueIterator<Windowed<Bytes>, byte[]> kvIterator = this.findSessions(key, upperKey, windowLower, windowUpper);
+                @SuppressWarnings("unchecked") final R result = (R) kvIterator;
+                final QueryResult<R> queryResult = QueryResult.forResult(result);
+                return queryResult;
+            } else {
+                final KeyValueIterator<Windowed<Bytes>, byte[]> kvIterator = this.findSessions(key, windowLower, windowUpper);
+                @SuppressWarnings("unchecked") final R result = (R) kvIterator;
+                final QueryResult<R> queryResult = QueryResult.forResult(result);
+                return queryResult;
+            }
+        }
+
         return StoreQueryUtils.handleBasicQueries(query, positionBound, collectExecutionInfo, this);
     }
 

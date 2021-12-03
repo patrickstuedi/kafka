@@ -21,6 +21,8 @@ import org.apache.kafka.streams.kstream.Windowed;
 import org.apache.kafka.streams.query.PositionBound;
 import org.apache.kafka.streams.query.Query;
 import org.apache.kafka.streams.query.QueryResult;
+import org.apache.kafka.streams.query.WindowKeyQuery;
+import org.apache.kafka.streams.query.WindowRangeQuery;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.WindowStore;
 import org.apache.kafka.streams.state.WindowStoreIterator;
@@ -119,6 +121,29 @@ public class RocksDBWindowStore
     @Override
     public <R> QueryResult<R> query(final Query<R> query, final PositionBound positionBound,
         final boolean collectExecutionInfo) {
+
+        if (query instanceof WindowKeyQuery){
+            @SuppressWarnings("unchecked") final WindowKeyQuery<Bytes, Long> windowKeyQuery = (WindowKeyQuery<Bytes, Long>) query;
+            final Bytes key = windowKeyQuery.getKey();
+            final long time = windowKeyQuery.getWindowLower();
+            byte[] value = this.fetch(key, time);
+            @SuppressWarnings("unchecked") final R result = (R) value;
+            final QueryResult<R> queryResult = QueryResult.forResult(result);
+            return queryResult;
+        } else if (query instanceof WindowRangeQuery){
+            @SuppressWarnings("unchecked") final WindowRangeQuery<Bytes, Long> windowRangeQuery = (WindowRangeQuery<Bytes, Long>) query;
+            final Bytes key = windowRangeQuery.getLowerBound();
+            final long windowLower = windowRangeQuery.getWindowLowerBound();
+            final long windowUpper = windowRangeQuery.getWindowUpperBound();
+            if (windowRangeQuery.getUpperBound().isPresent()){
+                final Bytes upperKey = windowRangeQuery.getUpperBound().get();
+                final KeyValueIterator<Windowed<Bytes>, byte[]> kvIterator = this.fetch(key, upperKey, windowLower, windowUpper);
+                @SuppressWarnings("unchecked") final R result = (R) kvIterator;
+                final QueryResult<R> queryResult = QueryResult.forResult(result);
+                return queryResult;
+            }
+        }
+
         return StoreQueryUtils.handleBasicQueries(query, positionBound, collectExecutionInfo, this);
     }
 }

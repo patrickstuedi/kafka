@@ -17,6 +17,7 @@
 package org.apache.kafka.streams.processor.internals;
 
 import java.util.concurrent.Future;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Bytes;
@@ -109,16 +110,16 @@ public class ProcessorContextImpl extends AbstractProcessorContext<Object, Objec
     }
 
     @Override
-    public Future<? extends TopicPartitionOffset> logChange(final String storeName,
-                          final Bytes key,
-                          final byte[] value,
-                          final long timestamp) {
+    public Future<RecordMetadata> logChange(final String storeName,
+                                            final Bytes key,
+                                            final byte[] value,
+                                            final long timestamp) {
         throwUnsupportedOperationExceptionIfStandby("logChange");
 
         final TopicPartition changelogPartition = stateManager().registeredChangelogPartitionFor(storeName);
 
         // Sending null headers to changelog topics (KIP-244)
-        Future<? extends TopicPartitionOffset> fut = collector.send(
+        Future<RecordMetadata> fut = collector.send(
             changelogPartition.topic(),
             key,
             value,

@@ -19,6 +19,7 @@ package org.apache.kafka.streams.processor.internals;
 import java.util.concurrent.Future;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.clients.producer.TopicPartitionOffset;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.PartitionInfo;
@@ -142,14 +143,14 @@ public class RecordCollectorImpl implements RecordCollector {
     }
 
     @Override
-    public <K, V> Future<? extends TopicPartitionOffset> send(final String topic,
-                            final K key,
-                            final V value,
-                            final Headers headers,
-                            final Integer partition,
-                            final Long timestamp,
-                            final Serializer<K> keySerializer,
-                            final Serializer<V> valueSerializer) {
+    public <K, V> Future<RecordMetadata> send(final String topic,
+                                              final K key,
+                                              final V value,
+                                              final Headers headers,
+                                              final Integer partition,
+                                              final Long timestamp,
+                                              final Serializer<K> keySerializer,
+                                              final Serializer<V> valueSerializer) {
         checkForException();
 
         final byte[] keyBytes;
@@ -181,7 +182,7 @@ public class RecordCollectorImpl implements RecordCollector {
 
         final ProducerRecord<byte[], byte[]> serializedRecord = new ProducerRecord<>(topic, partition, timestamp, keyBytes, valBytes, headers);
 
-        Future<? extends TopicPartitionOffset> fut = streamsProducer.send(serializedRecord, (metadata, exception) -> {
+        Future<RecordMetadata> fut = streamsProducer.send(serializedRecord, (metadata, exception) -> {
             // if there's already an exception record, skip logging offsets or new exceptions
             if (sendException.get() != null) {
                 return;

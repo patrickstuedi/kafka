@@ -18,7 +18,7 @@ package org.apache.kafka.test;
 
 import java.util.concurrent.Future;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.TopicPartitionOffset;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.apache.kafka.common.metrics.Metrics;
@@ -424,10 +424,10 @@ public class InternalMockProcessorContext<KOut, VOut>
     }
 
     @Override
-    public Future<? extends TopicPartitionOffset> logChange(final String storeName,
-                                                            final Bytes key,
-                                                            final byte[] value,
-                                                            final long timestamp) {
+    public Future<RecordMetadata> logChange(final String storeName,
+                                            final Bytes key,
+                                            final byte[] value,
+                                            final long timestamp) {
         recordCollector().send(
             storeName + "-changelog",
             key,

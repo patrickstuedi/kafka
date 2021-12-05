@@ -18,7 +18,7 @@ package org.apache.kafka.streams.processor.internals;
 
 import java.util.concurrent.Future;
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.TopicPartitionOffset;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
@@ -28,14 +28,14 @@ import java.util.Map;
 
 public interface RecordCollector {
 
-    <K, V> Future<? extends TopicPartitionOffset> send(final String topic,
-                     final K key,
-                     final V value,
-                     final Headers headers,
-                     final Integer partition,
-                     final Long timestamp,
-                     final Serializer<K> keySerializer,
-                     final Serializer<V> valueSerializer);
+    <K, V> Future<RecordMetadata> send(final String topic,
+                                       final K key,
+                                       final V value,
+                                       final Headers headers,
+                                       final Integer partition,
+                                       final Long timestamp,
+                                       final Serializer<K> keySerializer,
+                                       final Serializer<V> valueSerializer);
 
     <K, V> void send(final String topic,
                                                        final K key,

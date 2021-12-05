@@ -17,7 +17,7 @@
 package org.apache.kafka.streams.processor.internals;
 
 import java.util.concurrent.Future;
-import org.apache.kafka.clients.producer.TopicPartitionOffset;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.common.utils.Time;
 import org.apache.kafka.streams.StreamsConfig;
@@ -121,10 +121,10 @@ public class GlobalProcessorContextImpl extends AbstractProcessorContext<Object,
     }
 
     @Override
-    public Future<? extends TopicPartitionOffset> logChange(final String storeName,
-                                                            final Bytes key,
-                                                            final byte[] value,
-                                                            final long timestamp) {
+    public Future<RecordMetadata> logChange(final String storeName,
+                                            final Bytes key,
+                                            final byte[] value,
+                                            final long timestamp) {
         throw new UnsupportedOperationException("this should not happen: logChange() not supported in global processor context.");
     }
 

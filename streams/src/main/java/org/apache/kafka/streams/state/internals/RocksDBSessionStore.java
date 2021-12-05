@@ -24,6 +24,7 @@ import org.apache.kafka.streams.query.Position;
 import org.apache.kafka.streams.query.PositionBound;
 import org.apache.kafka.streams.query.Query;
 import org.apache.kafka.streams.query.QueryResult;
+import org.apache.kafka.streams.query.WindowRangeQuery;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.SessionStore;
 
@@ -53,6 +54,30 @@ public class RocksDBSessionStore
     @Override
     public <R> QueryResult<R> query(final Query<R> query, final PositionBound positionBound,
         final boolean collectExecutionInfo) {
+
+        if (query instanceof WindowRangeQuery) {
+            @SuppressWarnings("unchecked") final WindowRangeQuery<Bytes, byte[]> windowRangeQuery = (WindowRangeQuery<Bytes, byte[]>) query;
+            if (windowRangeQuery.getKeyLowerBound().isPresent() && !windowRangeQuery.getKeyUpperBound().isPresent()) {
+                final Bytes key = windowRangeQuery.getKeyLowerBound().get();
+                final KeyValueIterator<Windowed<Bytes>, byte[]> keyValueIterator = this.fetch(key);
+                @SuppressWarnings("unchecked") final R result = (R) keyValueIterator;
+                final QueryResult<R> queryResult = QueryResult.forResult(result);
+                return queryResult;
+            } else if (windowRangeQuery.getKeyUpperBound().isPresent()) {
+                final Bytes keyLower = windowRangeQuery.getKeyLowerBound().get();
+                final Bytes keyUpper = windowRangeQuery.getKeyLowerBound().get();
+                KeyValueIterator<Windowed<Bytes>, byte[]> keyValueIterator = KeyValueIterators.emptyIterator();
+                if (keyLower == keyUpper) {
+                    keyValueIterator = this.fetch(keyLower);
+                } else {
+                    keyValueIterator = this.fetch(keyLower, keyUpper);
+                }
+                @SuppressWarnings("unchecked") final R result = (R) keyValueIterator;
+                final QueryResult<R> queryResult = QueryResult.forResult(result);
+                return queryResult;
+            }
+        }
+
         return StoreQueryUtils.handleBasicQueries(query, positionBound, collectExecutionInfo, this);
     }
 

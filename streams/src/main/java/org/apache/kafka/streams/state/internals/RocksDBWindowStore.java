@@ -24,6 +24,8 @@ import org.apache.kafka.streams.query.Position;
 import org.apache.kafka.streams.query.PositionBound;
 import org.apache.kafka.streams.query.Query;
 import org.apache.kafka.streams.query.QueryResult;
+import org.apache.kafka.streams.query.WindowKeyQuery;
+import org.apache.kafka.streams.query.WindowRangeQuery;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.WindowStore;
 import org.apache.kafka.streams.state.WindowStoreIterator;
@@ -132,6 +134,35 @@ public class RocksDBWindowStore
     @Override
     public <R> QueryResult<R> query(final Query<R> query, final PositionBound positionBound,
         final boolean collectExecutionInfo) {
+
+        if (query instanceof WindowKeyQuery) {
+            @SuppressWarnings("unchecked") final WindowKeyQuery<Bytes, byte[]> windowKeyQuery = (WindowKeyQuery<Bytes, byte[]>) query;
+            if (windowKeyQuery.getWindowLower().isPresent()) {
+                final Bytes key = windowKeyQuery.getKey();
+                final long time = windowKeyQuery.getWindowLower().get();
+                final byte[] value = this.fetch(key, time);
+                @SuppressWarnings("unchecked") final R result = (R) value;
+                final QueryResult<R> queryResult = QueryResult.forResult(result);
+                return queryResult;
+            }
+        } else if (query instanceof WindowRangeQuery) {
+            @SuppressWarnings("unchecked") final WindowRangeQuery<Bytes, byte[]> windowRangeQuery = (WindowRangeQuery<Bytes, byte[]>) query;
+            if (windowRangeQuery.getKeyLowerBound().isPresent() &&
+                windowRangeQuery.getKeyUpperBound().isPresent() &&
+                windowRangeQuery.getWindowLowerBound().isPresent() &&
+                windowRangeQuery.getWindowUpperBound().isPresent()) {
+
+                final Bytes keyLower = windowRangeQuery.getKeyLowerBound().get();
+                final Bytes keyUpper = windowRangeQuery.getKeyUpperBound().get();
+                final long windowLower = windowRangeQuery.getWindowLowerBound().get();
+                final long windowUpper = windowRangeQuery.getWindowUpperBound().get();
+                final KeyValueIterator<Windowed<Bytes>, byte[]> kvIterator = this.fetch(keyLower, keyUpper, windowLower, windowUpper);
+                @SuppressWarnings("unchecked") final R result = (R) kvIterator;
+                final QueryResult<R> queryResult = QueryResult.forResult(result);
+                return queryResult;
+            }
+        }
+
         return StoreQueryUtils.handleBasicQueries(query, positionBound, collectExecutionInfo, this);
     }
 

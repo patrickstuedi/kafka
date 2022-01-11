@@ -32,7 +32,7 @@ public class RocksDBSessionStore
     extends WrappedStateStore<SegmentedBytesStore, Object, Object>
     implements SessionStore<Bytes, byte[]> {
 
-    private final Position position;
+    private Position position;
     private StateStoreContext stateStoreContext;
 
     RocksDBSessionStore(final SegmentedBytesStore bytesStore) {
@@ -46,8 +46,13 @@ public class RocksDBSessionStore
         this.stateStoreContext = context;
     }
 
-    Position getPosition() {
+    public Position getPosition() {
         return position;
+    }
+
+    @Override
+    public void setPosition(final Position position) {
+        this.position = position;
     }
 
     @Override

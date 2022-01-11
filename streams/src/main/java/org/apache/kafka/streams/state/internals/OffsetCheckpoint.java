@@ -18,6 +18,7 @@ package org.apache.kafka.streams.state.internals;
 
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Utils;
+import org.apache.kafka.streams.query.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +29,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -117,6 +120,19 @@ public class OffsetCheckpoint {
     }
 
     /**
+     * Write the given offsets to the checkpoint file. All offsets should be non-negative.
+     *
+     * @throws IOException if any file operation fails with an IO exception
+     */
+    public void write(final Position position) throws IOException {
+        synchronized (lock) {
+            System.out.println("### writing pos: " + position.toString());
+            final ByteBuffer buffer = PositionSerde.serialize(position);
+            Files.write(Paths.get(file.getAbsolutePath()), buffer.array());
+        }
+    }
+
+    /**
      * @throws IOException if file write operations failed with any IO exception
      */
     static void writeIntLine(final BufferedWriter writer,
@@ -190,11 +206,37 @@ public class OffsetCheckpoint {
         }
     }
 
+
+
+    /**
+     * Reads the offsets from the local checkpoint file, skipping any negative offsets it finds.
+     *
+     * @throws IOException if any file operation fails with an IO exception
+     * @throws IllegalArgumentException if the offset checkpoint version is unknown
+     */
+    public Position readPosition() throws IOException {
+        synchronized (lock) {
+            if (!file.exists()) {
+                return Position.emptyPosition();
+            }
+            final byte[] allBytes = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+            final ByteBuffer buf = ByteBuffer.wrap(allBytes);
+            final Position pos = PositionSerde.deserialize(buf);
+            System.out.println("### reading pos: " + pos.toString());
+            return pos;
+        }
+    }
+
+
+
+
+
     /**
      * @throws IOException if file read ended prematurely
      */
     private int readInt(final BufferedReader reader) throws IOException {
         final String line = reader.readLine();
+        System.out.println("### line " + line);
         if (line == null) {
             throw new EOFException("File ended prematurely.");
         }

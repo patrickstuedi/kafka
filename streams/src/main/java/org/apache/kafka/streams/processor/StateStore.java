@@ -21,6 +21,7 @@ import org.apache.kafka.streams.errors.StreamsException;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.internals.StoreToProcessorContextAdapter;
 import org.apache.kafka.streams.query.FailureReason;
+import org.apache.kafka.streams.query.Position;
 import org.apache.kafka.streams.query.PositionBound;
 import org.apache.kafka.streams.query.Query;
 import org.apache.kafka.streams.query.QueryResult;
@@ -151,5 +152,15 @@ public interface StateStore {
         boolean collectExecutionInfo) {
         // If a store doesn't implement a query handler, then all queries are unknown.
         return QueryResult.forUnknownQueryType(query, this);
+    }
+
+    default Position getPosition() {
+        final Position ret = Position.emptyPosition();
+        ret.withComponent("topic", 0, 1);
+        return ret;
+    }
+
+    default void setPosition(Position position) {
+
     }
 }

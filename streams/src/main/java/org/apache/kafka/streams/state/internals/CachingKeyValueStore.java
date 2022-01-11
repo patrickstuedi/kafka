@@ -83,7 +83,7 @@ public class CachingKeyValueStore
         streamThread = Thread.currentThread();
     }
 
-    Position getPosition() {
+    public Position getPosition() {
         return position;
     }
 

@@ -87,7 +87,7 @@ public class InMemoryKeyValueStore implements KeyValueStore<Bytes, byte[]> {
         return open;
     }
 
-    Position getPosition() {
+    public Position getPosition() {
         return position;
     }
 

@@ -23,6 +23,7 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.processor.StateRestoreCallback;
 import org.apache.kafka.streams.processor.StateStore;
+import org.apache.kafka.streams.query.Position;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 
@@ -139,5 +140,12 @@ public class MockKeyValueStore implements KeyValueStore<Object, Object> {
     @Override
     public long approximateNumEntries() {
         return 0;
+    }
+
+    @Override
+    public Position getPosition() {
+        final Position pos = Position.emptyPosition();
+        pos.withComponent("checkpointTest", 77, 78);
+        return pos;
     }
 }

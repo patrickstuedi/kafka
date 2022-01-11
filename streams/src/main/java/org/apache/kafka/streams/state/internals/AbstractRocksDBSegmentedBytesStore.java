@@ -349,7 +349,7 @@ public class AbstractRocksDBSegmentedBytesStore<S extends Segment> implements Se
         return writeBatchMap;
     }
 
-    Position getPosition() {
+    public Position getPosition() {
         return position;
     }
 }

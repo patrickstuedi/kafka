@@ -275,6 +275,11 @@ public class StateDirectory {
         return new File(getOrCreateDirectoryForTask(taskId), StateManagerUtil.CHECKPOINT_FILE_NAME);
     }
 
+    File checkpointFileForStore(final TaskId taskId, final String storeName) {
+        final String filename = storeName + StateManagerUtil.POSITION_FILE_NAME;
+        return new File(getOrCreateDirectoryForTask(taskId), filename);
+    }
+
     /**
      * Decide if the directory of the task is empty or not
      */

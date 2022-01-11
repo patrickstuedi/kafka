@@ -55,7 +55,7 @@ public class RocksDBWindowStore
         this.stateStoreContext = context;
     }
 
-    Position getPosition() {
+    public Position getPosition() {
         return position;
     }
 

@@ -122,7 +122,7 @@ public class InMemorySessionStore implements SessionStore<Bytes, byte[]> {
         this.stateStoreContext = context;
     }
 
-    Position getPosition() {
+    public Position getPosition() {
         return position;
     }
 

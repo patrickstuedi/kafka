@@ -18,6 +18,8 @@ package org.apache.kafka.streams.state.internals;
 
 import org.apache.kafka.streams.query.Position;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -103,5 +105,61 @@ public final class PositionSerde {
 
         buffer.flip();
         return buffer;
+    }
+
+    public static ByteBuffer serialize(final Position position, final BufferedWriter writer) throws IOException {
+        final byte version = (byte) 0;
+
+        int arraySize = Byte.SIZE; // version
+
+        final int nTopics = position.getTopics().size();
+        arraySize += Integer.SIZE;
+
+        final ArrayList<String> entries =
+                new ArrayList<>(position.getTopics());
+        final byte[][] topics = new byte[entries.size()][];
+
+        for (int i = 0; i < nTopics; i++) {
+            final String topic = entries.get(i);
+            final byte[] topicBytes = topic.getBytes(StandardCharsets.UTF_8);
+            topics[i] = topicBytes;
+            arraySize += Integer.SIZE; // topic name length
+            arraySize += topicBytes.length; // topic name itself
+
+            final Map<Integer, Long> partitionOffsets = position.getPartitionPositions(topic);
+            arraySize += Integer.SIZE; // Number of PartitionOffset pairs
+            arraySize += (Integer.SIZE + Long.SIZE)
+                    * partitionOffsets.size(); // partitionOffsets themselves
+        }
+
+        final ByteBuffer buffer = ByteBuffer.allocate(arraySize);
+
+        writeIntLine(writer, version);
+        //buffer.put(version);
+
+        //buffer.putInt(nTopics);
+        writeIntLine(writer, nTopics);
+        for (int i = 0; i < nTopics; i++) {
+            writeIntLine(writer, topics[i].length);
+            buffer.putInt(topics[i].length);
+            buffer.put(topics[i]);
+
+            final String topic = entries.get(i);
+            final Map<Integer, Long> partitionOffsets = position.getPartitionPositions(topic);
+            buffer.putInt(partitionOffsets.size());
+            for (final Entry<Integer, Long> partitionOffset : partitionOffsets.entrySet()) {
+                buffer.putInt(partitionOffset.getKey());
+                buffer.putLong(partitionOffset.getValue());
+            }
+        }
+
+        buffer.flip();
+        return buffer;
+    }
+
+    static void writeIntLine(final BufferedWriter writer,
+                             final int number) throws IOException {
+        writer.write(Integer.toString(number));
+        writer.newLine();
     }
 }

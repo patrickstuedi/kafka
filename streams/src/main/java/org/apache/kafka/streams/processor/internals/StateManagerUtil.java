@@ -42,6 +42,7 @@ import static org.apache.kafka.streams.state.internals.WrappedStateStore.isTimes
  */
 final class StateManagerUtil {
     static final String CHECKPOINT_FILE_NAME = ".checkpoint";
+    static final String POSITION_FILE_NAME = ".position";
     static final long OFFSET_DELTA_THRESHOLD_FOR_CHECKPOINT = 10_000L;
 
     private StateManagerUtil() {}

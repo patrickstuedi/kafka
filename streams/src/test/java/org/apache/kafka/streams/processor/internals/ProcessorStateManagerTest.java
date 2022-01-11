@@ -572,6 +572,8 @@ public class ProcessorStateManagerTest {
 
             assertTrue(checkpointFile.exists());
 
+            stateMgr.initializeStoreOffsetsFromCheckpoint(true);
+
             // the checkpoint file should contain an offset from the persistent store only.
             final Map<TopicPartition, Long> checkpointedOffsets = checkpoint.read();
             assertThat(checkpointedOffsets, is(singletonMap(new TopicPartition(persistentStoreTopicName, 1), 123L)));
